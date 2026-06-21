@@ -87,26 +87,26 @@ app.get("/api/room/:roomId", (req, res) => {
 });
 
 // مسار احتياطي لخدمة تطبيق React (توجيه العميل)
-app.get("*", (req, res, next) => {
-  if (req.path.startsWith("/api") || req.path.startsWith("/socket.io")) {
-    return next();
+app.get("*", (req, res) => {
+  const indexPath = path.join(buildPath, "index.html");
+  const fs = require("fs");
+  if (fs.existsSync(indexPath)) {
+    res.sendFile(indexPath);
+  } else {
+    res.status(503).send(`
+      <!DOCTYPE html>
+      <html dir="rtl">
+        <head><meta charset="utf-8"><title>Zen Chess — جاري التحميل</title></head>
+        <body style="font-family:sans-serif;background:#1a1f2e;color:#e8eaf0;display:flex;align-items:center;justify-content:center;height:100vh;margin:0;flex-direction:column;gap:16px">
+          <div style="font-size:3rem">♟</div>
+          <h1>Zen Chess Server</h1>
+          <p style="color:#7eb8a4">✓ السيرفر يعمل</p>
+          <p style="color:#e07070;font-size:.85rem">⚠ ملفات الواجهة غير موجودة — تأكد من إعداد Build Command في Render</p>
+          <p style="color:#5c647a;font-size:.75rem">Build Command: npm run build</p>
+        </body>
+      </html>
+    `);
   }
-  res.sendFile(path.join(buildPath, "index.html"), (err) => {
-    if (err) {
-      res.send(`
-        <!DOCTYPE html>
-        <html dir="rtl">
-          <head><meta charset="utf-8"><title>Zen Chess Server</title></head>
-          <body style="font-family:sans-serif;background:#1a1f2e;color:#e8eaf0;display:flex;align-items:center;justify-content:center;height:100vh;margin:0;flex-direction:column;gap:16px">
-            <div style="font-size:3rem">♟</div>
-            <h1>Zen Chess Server</h1>
-            <p style="color:#7eb8a4">✓ السيرفر يعمل (بيئة التطوير)</p>
-            <p style="color:#5c647a;font-size:.85rem">الغرف النشطة: ${rooms.size} | ${new Date().toLocaleString("ar")}</p>
-          </body>
-        </html>
-      `);
-    }
-  });
 });
 
 // ============================================================
